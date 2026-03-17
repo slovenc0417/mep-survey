@@ -3,74 +3,17 @@ const disciplines = [
 "Sanitary","Gas","Storm","Fire Alarm","Controls"
 ];
 
-let db = JSON.parse(localStorage.getItem("surveyV35") || "null");
+let surveys = JSON.parse(localStorage.getItem("surveyManagerV4") || "[]");
+let activeSurveyId = localStorage.getItem("activeSurveyId");
 
-function save(){ localStorage.setItem("surveyV35", JSON.stringify(db)); }
-
-function upper(v){ return (v||"").toUpperCase(); }
-
-function headerTitle(){
-if(!db) return "MEP Survey";
-return `MEP Survey — ${db.meta.client} — ${db.meta.city}`;
+function saveAll(){
+localStorage.setItem("surveyManagerV4", JSON.stringify(surveys));
+localStorage.setItem("activeSurveyId", activeSurveyId);
 }
 
-function startScreen(){
-
-if(db && !db.archived){
-return dashboard();
-}
-
-app.innerHTML = `
-<div class="header">${headerTitle()}</div>
-
-<div class="container">
-<div class="card">
-<h3>Start New Survey</h3>
-
-Client<input id="client">
-Former Store<input id="store">
-Address<input id="addr">
-City<input id="city">
-State<input id="state">
-Date<input id="date">
-
-<button onclick="createSurvey()">Start Survey</button>
-</div>
-</div>
-`;
-
-let d=new Date();
-document.getElementById("date").value =
-("0"+(d.getMonth()+1)).slice(-2)+"/"+
-("0"+d.getDate()).slice(-2)+"/"+
-d.getFullYear().toString().slice(-2);
-}
-
-function createSurvey(){
-
-db={
-meta:{
-client: upper(client.value),
-store: upper(store.value),
-addr: upper(addr.value),
-city: upper(city.value),
-state: upper(state.value),
-date: date.value
-},
-disc:{},
-archived:false
-};
-
-disciplines.forEach(d=>{
-db.disc[d]={
-status:"Not Started",
-general:{},
-equip:[]
-};
-});
-
-save();
-dashboard();
+function headerTitle(s){
+if(!s) return "MEP Survey";
+return `MEP Survey - ${s.meta.client} - ${s.meta.city}`;
 }
 
 function statusIcon(s){
@@ -80,48 +23,172 @@ if(s=="N/A") return "N/A";
 return "○";
 }
 
-function dashboard(){
+function homeScreen(){
 
-let html=`<div class="header">${headerTitle()}</div><div class="container">`;
+let html = `<div class="header">MEP Survey</div><div class="container">`;
 
-html+=`
+surveys.forEach(s=>{
+let dim = s.archived ? "style='opacity:.4'" : "";
+
+html += `
+<div class="card" ${dim} onclick="openSurvey('${s.id}')">
+<b>${s.meta.client} - ${s.meta.city}</b><br>
+${s.meta.date} &nbsp;&nbsp; ${statusIcon(overallStatus(s))}
+</div>
+`;
+});
+
+html += `
+<button onclick="newSurveyScreen()">+ Start New Survey</button>
+</div>`;
+
+app.innerHTML = html;
+}
+
+function overallStatus(s){
+let done = Object.values(s.disc).filter(d=>d.status=="Complete").length;
+if(done==0) return "Not Started";
+if(done < disciplines.length) return "In Progress";
+return "Complete";
+}
+
+function newSurveyScreen(){
+
+app.innerHTML = `
+<div class="header">MEP Survey</div>
+<div class="container">
 <div class="card">
-DATE: ${db.meta.date}
+<h3>New Survey</h3>
+
+Client<input id="client">
+Former Store<input id="store">
+Address<input id="addr">
+City<input id="city">
+State<input id="state">
+Date<input id="date">
+
+<button onclick="createSurvey()">Create Survey</button>
+<button onclick="homeScreen()">Back</button>
+</div>
 </div>
 `;
 
-disciplines.forEach(d=>{
-let s=db.disc[d].status;
+let d=new Date();
+document.getElementById("date").value =
+("0"+(d.getMonth()+1)).slice(-2)+"-"+
+("0"+d.getDate()).slice(-2)+"-"+
+d.getFullYear().toString().slice(-2);
+}
 
-html+=`
+function createSurvey(){
+
+let id = Date.now().toString();
+
+let survey = {
+id,
+meta:{
+client: client.value,
+store: store.value,
+addr: addr.value,
+city: city.value,
+state: state.value,
+date: date.value
+},
+disc:{},
+archived:false
+};
+
+disciplines.forEach(d=>{
+survey.disc[d]={ status:"Not Started", general:{}, equip:[] };
+});
+
+surveys.push(survey);
+activeSurveyId = id;
+saveAll();
+dashboard();
+}
+
+function getActive(){
+return surveys.find(s=>s.id==activeSurveyId);
+}
+
+function openSurvey(id){
+
+let s = surveys.find(x=>x.id==id);
+
+if(overallStatus(s)=="Complete"){
+return completedDialog(s);
+}
+
+activeSurveyId = id;
+saveAll();
+dashboard();
+}
+
+function completedDialog(s){
+
+app.innerHTML = `
+<div class="header">${headerTitle(s)}</div>
+<div class="container">
 <div class="card">
-<b>${d}</b> (${statusIcon(s)})
+Survey Completed<br><br>
+<button onclick="activeSurveyId='${s.id}';dashboard()">View / Edit</button>
+<button onclick="exportExcel()">Export Again</button>
+<button onclick="archiveSurvey('${s.id}')">Archive</button>
+<button onclick="homeScreen()">Back</button>
+</div>
+</div>
+`;
+}
+
+function archiveSurvey(id){
+let s = surveys.find(x=>x.id==id);
+s.archived = true;
+saveAll();
+homeScreen();
+}
+
+function dashboard(){
+
+let s = getActive();
+
+let html = `<div class="header">${headerTitle(s)}</div><div class="container">`;
+
+html += `<div class="card">Date: ${s.meta.date}</div>`;
+
+disciplines.forEach(d=>{
+let st = s.disc[d].status;
+
+html += `
+<div class="card">
+<b>${d}</b> (${statusIcon(st)})
 <button onclick="openDisc('${d}')">Enter</button>
 <button onclick="markNA('${d}')">N/A</button>
 </div>
 `;
 });
 
-html+=`</div>`;
-app.innerHTML=html;
-save();
+html += `
+<button onclick="homeScreen()">Back To Surveys</button>
+</div>`;
+
+app.innerHTML = html;
+saveAll();
 }
 
 function markNA(d){
-db.disc[d].status="N/A";
+getActive().disc[d].status="N/A";
 dashboard();
 }
 
 function openDisc(d){
-
 if(d=="HVAC") return hvacScreen();
 
-app.innerHTML=`
-<div class="header">${headerTitle()}</div>
+app.innerHTML = `
+<div class="header">${headerTitle(getActive())}</div>
 <div class="container">
 <div class="card">
-<h3>${d}</h3>
-Feature not built yet.
+${d} - Feature not built yet
 <button onclick="dashboard()">Back</button>
 </div>
 </div>
@@ -130,30 +197,34 @@ Feature not built yet.
 
 function hvacScreen(){
 
-let g=db.disc["HVAC"].general;
-let count=db.disc["HVAC"].equip.length;
+let s = getActive();
+let g = s.disc["HVAC"].general;
+let count = s.disc["HVAC"].equip.length;
 
-app.innerHTML=`
-<div class="header">${headerTitle()}</div>
+app.innerHTML = `
+<div class="header">${headerTitle(s)}</div>
 <div class="container">
 
 <div class="card">
-<h3>HVAC GENERAL</h3>
+<h3>HVAC General</h3>
 
-RTU Type
-<select id="rtutype">
-<option></option>
-<option>GAS PACKAGED</option>
-<option>HEAT PUMP</option>
-<option>ELECTRIC HEAT</option>
-<option>MIXED</option>
-<option>UNKNOWN</option>
-</select>
+<label><input type="checkbox" id="t1"> Gas Heat / Electric Cooling</label><br>
+<label><input type="checkbox" id="t2"> Electric Heat / Electric Cooling</label><br>
+<label><input type="checkbox" id="t3"> Cooling Only</label><br>
+<label><input type="checkbox" id="t4"> Heat Pump</label><br>
+<label><input type="checkbox" id="t5"> Air Handling Unit</label><br><br>
 
-Gas Distribution<textarea id="gas">${g.gas||""}</textarea>
-Electrical Distribution<textarea id="elec">${g.elec||""}</textarea>
-Condensate<textarea id="cond">${g.cond||""}</textarea>
-Air Distribution<textarea id="air">${g.air||""}</textarea>
+Gas Distribution
+<textarea id="gas" placeholder="Example: Elevated gas header across roof feeding each RTU individually">${g.gas||""}</textarea>
+
+Electrical Distribution
+<textarea id="elec" placeholder="Example: Rigid conduit on sleepers from roof disconnects">${g.elec||""}</textarea>
+
+Condensate
+<textarea id="cond" placeholder="Example: Splash blocks on roof near units">${g.cond||""}</textarea>
+
+Air Distribution
+<textarea id="air" placeholder="Example: Concentric diffusers on sales floor, ducted BOH">${g.air||""}</textarea>
 
 <button onclick="saveHVACGeneral()">Save General</button>
 </div>
@@ -168,26 +239,30 @@ Air Distribution<textarea id="air">${g.air||""}</textarea>
 </div>
 `;
 
-db.disc["HVAC"].status="In Progress";
-save();
-}
-
-function completeHVAC(){
-db.disc["HVAC"].status="Complete";
-dashboard();
+s.disc["HVAC"].status="In Progress";
+saveAll();
 }
 
 function saveHVACGeneral(){
 
-db.disc["HVAC"].general={
-type: upper(rtutype.value),
-gas: upper(gas.value),
-elec: upper(elec.value),
-cond: upper(cond.value),
-air: upper(air.value)
+let s = getActive();
+
+let types=[];
+if(t1.checked) types.push("Gas Heat/Electric Cooling");
+if(t2.checked) types.push("Electric Heat/Electric Cooling");
+if(t3.checked) types.push("Cooling Only");
+if(t4.checked) types.push("Heat Pump");
+if(t5.checked) types.push("Air Handling Unit");
+
+s.disc["HVAC"].general={
+type: types.join(", "),
+gas: gas.value,
+elec: elec.value,
+cond: cond.value,
+air: air.value
 };
 
-save();
+saveAll();
 alert("Saved");
 }
 
@@ -195,11 +270,10 @@ let voltValue="";
 
 function addRTU(){
 
-app.innerHTML=`
-<div class="header">${headerTitle()}</div>
+app.innerHTML = `
+<div class="header">${headerTitle(getActive())}</div>
 <div class="container">
 <div class="card">
-<h3>Add RTU</h3>
 
 Mark<input id="mark">
 Make<input id="make">
@@ -219,20 +293,21 @@ Heat
 Mounting
 <select id="mount">
 <option></option>
-<option>STANDARD CURB</option>
-<option>CURB ADAPTER</option>
+<option>Standard Curb</option>
+<option>Curb Adapter</option>
 </select>
 
 Reuse
 <select id="reuse">
 <option></option>
-<option>YES</option>
-<option>NO</option>
+<option>Yes</option>
+<option>No</option>
 </select>
 
 Notes<textarea id="notes"></textarea>
 
 <button onclick="saveRTU()">Save RTU</button>
+
 </div>
 </div>
 `;
@@ -245,20 +320,22 @@ document.getElementById("volt").innerHTML="Selected: "+v;
 
 function saveRTU(){
 
-db.disc["HVAC"].equip.push({
-mark: upper(mark.value),
-make: upper(make.value),
-model: upper(model.value),
-serial: upper(serial.value),
+let s = getActive();
+
+s.disc["HVAC"].equip.push({
+mark: mark.value,
+make: make.value,
+model: model.value,
+serial: serial.value,
 volt: voltValue,
 gas: gasheat.checked,
 elec: elecheat.checked,
-mount: upper(mount.value),
-reuse: upper(reuse.value),
-notes: upper(notes.value)
+mount: mount.value,
+reuse: reuse.value,
+notes: notes.value
 });
 
-save();
+saveAll();
 
 if(confirm("Add another RTU?")){
 addRTU();
@@ -267,4 +344,4 @@ hvacScreen();
 }
 }
 
-startScreen();
+homeScreen();
