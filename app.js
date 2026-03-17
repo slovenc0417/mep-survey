@@ -1,40 +1,33 @@
-// VERSION 4.3 — HVAC EQUIPMENT SYSTEM
+// VERSION 4.4 — CONSOLIDATED STABLE BUILD
 
 const disciplines = [
 "Walk Site","Electrical","HVAC","Cold Water",
 "Sanitary","Gas","Storm","Fire Alarm","Controls"
 ];
 
-let surveys = JSON.parse(localStorage.getItem("surveyManagerV43") || "[]");
-let activeSurveyId = localStorage.getItem("activeSurveyIdV43");
+let surveys = JSON.parse(localStorage.getItem("surveyManagerV44") || "[]");
+let activeSurveyId = localStorage.getItem("activeSurveyIdV44");
 
 function saveAll(){
-localStorage.setItem("surveyManagerV43", JSON.stringify(surveys));
-localStorage.setItem("activeSurveyIdV43", activeSurveyId);
+localStorage.setItem("surveyManagerV44", JSON.stringify(surveys));
+localStorage.setItem("activeSurveyIdV44", activeSurveyId);
 }
 
-const stateMap = {
-OH:"OH",OHIO:"OH",
-VA:"VA",VIRGINIA:"VA",
-MD:"MD",MARYLAND:"MD",
-DC:"DC","DISTRICT OF COLUMBIA":"DC"
-};
+// ---------- NORMALIZERS ----------
+
+function titleCase(str){
+return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+}
 
 function normalizeState(v){
 let t=(v||"").toUpperCase().replace(/\s+/g,'').trim();
-
 const map={
 OH:"OH",OHIO:"OH",
 VA:"VA",VIRGINIA:"VA",
 MD:"MD",MARYLAND:"MD",
 DC:"DC","DISTRICTOFCOLUMBIA":"DC"
 };
-
 return map[t] || t;
-}
-
-function titleCase(str){
-return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 }
 
 function wordToNumber(str){
@@ -61,6 +54,12 @@ if(mark.startsWith("RTU-")||mark.startsWith("AHU-")) return mark;
 return type+"-"+mark;
 }
 
+function clean(v){
+return (v||"").replace(/\s+/g,'');
+}
+
+// ---------- UI HELPERS ----------
+
 function headerTitle(s){
 if(!s) return "MEP Survey";
 return `MEP Survey - ${s.meta.client} - ${s.meta.city}`;
@@ -73,7 +72,25 @@ if(s=="N/A") return "N/A";
 return "○";
 }
 
+function smartSort(list){
+return list.sort((a,b)=>{
+let ma=a.mark.split("-")[1]||"";
+let mb=b.mark.split("-")[1]||"";
+let na=parseInt(ma);
+let nb=parseInt(mb);
+
+if(!isNaN(na)&&!isNaN(nb)) return na-nb;
+if(!isNaN(na)) return -1;
+if(!isNaN(nb)) return 1;
+
+return ma.localeCompare(mb);
+});
+}
+
+// ---------- HOME ----------
+
 function homeScreen(){
+
 let html=`<div class="header">MEP Survey</div><div class="container">`;
 
 surveys.forEach(s=>{
@@ -96,7 +113,10 @@ if(done<disciplines.length) return "In Progress";
 return "Complete";
 }
 
+// ---------- NEW SURVEY ----------
+
 function newSurveyScreen(){
+
 app.innerHTML=`
 <div class="header">MEP Survey</div>
 <div class="container">
@@ -120,6 +140,7 @@ date.value=("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)+"-"+
 }
 
 function createSurvey(){
+
 let id=Date.now().toString();
 
 let survey={
@@ -128,7 +149,7 @@ meta:{
 client:titleCase(client.value),
 store:titleCase(store.value),
 addr:addr.value,
-city:city.value,
+city:titleCase(city.value),
 state:normalizeState(state.value),
 date:date.value
 },
@@ -146,20 +167,24 @@ saveAll();
 dashboard();
 }
 
+// ---------- DASHBOARD ----------
+
 function getActive(){
 return surveys.find(s=>s.id==activeSurveyId);
 }
 
 function openSurvey(id){
-let s=surveys.find(x=>x.id==id);
 activeSurveyId=id;
 saveAll();
 dashboard();
 }
 
 function dashboard(){
+
 let s=getActive();
+
 let html=`<div class="header">${headerTitle(s)}</div><div class="container">`;
+
 html+=`<div class="card"><b>Date:</b> ${s.meta.date}</div>`;
 
 disciplines.forEach(d=>{
@@ -184,26 +209,13 @@ dashboard();
 
 function openDisc(d){
 if(d=="HVAC") return hvacScreen();
+
 app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 <div class="container"><div class="card">${d} - Feature not built yet
 <button onclick="dashboard()">Back</button></div></div>`;
 }
 
-function smartSort(list){
-return list.sort((a,b)=>{
-let ma=a.mark.split("-")[1]||"";
-let mb=b.mark.split("-")[1]||"";
-
-let na=parseInt(ma);
-let nb=parseInt(mb);
-
-if(!isNaN(na)&&!isNaN(nb)) return na-nb;
-if(!isNaN(na)) return -1;
-if(!isNaN(nb)) return 1;
-
-return ma.localeCompare(mb);
-});
-}
+// ---------- HVAC ----------
 
 function hvacScreen(){
 
@@ -215,18 +227,16 @@ let ahus=smartSort(all.filter(e=>e.type=="AHU"));
 
 let html=`<div class="header">${headerTitle(s)}</div><div class="container">`;
 
-html+=`
-<div class="card"><b>RTUs</b><br>Quantity: ${rtus.length}<br><br>`;
-rtus.forEach((r,i)=>{
+html+=`<div class="card"><b>RTUs</b><br>Quantity: ${rtus.length}<br><br>`;
+rtus.forEach(r=>{
 let idx=all.indexOf(r);
 html+=`${r.mark} <button onclick="editEquip(${idx})">Edit</button>
 <button onclick="deleteEquip(${idx})">Delete</button><br>`;
 });
 html+=`<button onclick="addEquip('RTU')">+ Add RTU</button></div>`;
 
-html+=`
-<div class="card"><b>AHUs</b><br>Quantity: ${ahus.length}<br><br>`;
-ahus.forEach((r,i)=>{
+html+=`<div class="card"><b>AHUs</b><br>Quantity: ${ahus.length}<br><br>`;
+ahus.forEach(r=>{
 let idx=all.indexOf(r);
 html+=`${r.mark} <button onclick="editEquip(${idx})">Edit</button>
 <button onclick="deleteEquip(${idx})">Delete</button><br>`;
@@ -237,7 +247,6 @@ html+=`<button onclick="completeHVAC()">Mark HVAC Complete</button>
 <button onclick="dashboard()">Back</button></div>`;
 
 app.innerHTML=html;
-
 s.disc["HVAC"].status="In Progress";
 saveAll();
 }
@@ -258,7 +267,16 @@ equipType=r.type;
 renderEquipForm(r);
 }
 
+function cb(id,label,checked){
+return `
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="${id}" ${checked?"checked":""}>
+<span>${label}</span>
+</label>`;
+}
+
 function renderEquipForm(r){
+
 app.innerHTML=`
 <div class="header">${headerTitle(getActive())}</div>
 <div class="container">
@@ -269,61 +287,25 @@ app.innerHTML=`
 <b>Model</b><input id="model" value="${r.model||""}">
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
-<b>Voltage</b><br>
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}> 
-<span>480V</span>
-</label>
+<b>Voltage</b>
+${cb("v1","480V",r.volt=="480V")}
+${cb("v2","208V",r.volt=="208V")}
+${cb("v3","Other",r.volt=="OTHER")}
 
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}> 
-<span>208V</span>
-</label>
+<b>Heat</b>
+${cb("h1","Gas",r.heat=="Gas")}
+${cb("h2","Electric",r.heat=="Electric")}
+${cb("h3","Unknown",r.heat=="Unknown")}
 
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="v3" ${r.volt=="OTHER"?"checked":""}> 
-<span>Other</span>
-</label>
+<b>Curb Type</b>
+${cb("c1","Standard Curb",r.mount=="Standard Curb")}
+${cb("c2","Curb Adapter",r.mount=="Curb Adapter")}
 
-<br><b>Heat</b><br>
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}>
-<span>Gas</span>
-</label>
+<b>Suitable for Re-use</b>
+${cb("r1","Yes",r.reuse=="Yes")}
+${cb("r2","No",r.reuse=="No")}
 
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}>
-<span>Electric</span>
-</label>
-
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="h3" ${r.heat=="Uknown"?"checked":""}>
-<span>Unknown</span>
-</label>
-
-<br><b>Curb Type</b><br>
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="c1" ${r.mount=="Standard Curb"?"checked":""}>
-<span>Standard Curb</span>
-</label>
-
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="c2" ${r.mount=="Curb Adapter"?"checked":""}>
-<span>Curb Adapter</span>
-</label>
-
-<br><b>Suitable for Re-use</b><br>
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}>
-<span>Yes</span>
-</label>
-
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}>
-<span>No</span>
-</label>
-
-<br><b>Additional Notes</b>
+<b>Additional Notes</b>
 <textarea id="notes">${r.notes||""}</textarea>
 
 <button onclick="saveEquip()">Save</button>
@@ -347,9 +329,9 @@ let finalMark=prefixMark(rawMark,equipType);
 let obj={
 type:equipType,
 mark:finalMark,
-make:make.value.replace(/\s+/g,''),
-model:model.value.replace(/\s+/g,''),
-serial:serial.value.replace(/\s+/g,''),
+make:clean(make.value),
+model:clean(model.value),
+serial:clean(serial.value),
 volt,
 heat,
 mount:curb,
@@ -363,28 +345,4 @@ s.disc["HVAC"].equip.push(obj);
 s.disc["HVAC"].equip[editingIndex]=obj;
 }
 
-saveAll();
-
-app.innerHTML=`
-<div class="header">${headerTitle(s)}</div>
-<div class="container">
-<div class="card">
-Saved<br><br>
-<button onclick="addEquip('${equipType}')">Add Another</button>
-<button onclick="hvacScreen()">Back To List</button>
-</div></div>`;
-}
-
-function deleteEquip(i){
-if(!confirm("Delete "+getActive().disc["HVAC"].equip[i].mark+" ?")) return;
-getActive().disc["HVAC"].equip.splice(i,1);
-saveAll();
-hvacScreen();
-}
-
-function completeHVAC(){
-getActive().disc["HVAC"].status="Complete";
-dashboard();
-}
-
-homeScreen();
+save
