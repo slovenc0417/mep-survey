@@ -3,12 +3,12 @@ const disciplines=[
 "Sanitary","Gas","Storm","Fire Alarm","Controls"
 ];
 
-let surveys=JSON.parse(localStorage.getItem("surveyManagerV432")||"[]");
-let activeSurveyId=localStorage.getItem("activeSurveyIdV432");
+let surveys=JSON.parse(localStorage.getItem("surveyManagerV44")||"[]");
+let activeSurveyId=localStorage.getItem("activeSurveyIdV44");
 
 function saveAll(){
-localStorage.setItem("surveyManagerV432",JSON.stringify(surveys));
-localStorage.setItem("activeSurveyIdV432",activeSurveyId);
+localStorage.setItem("surveyManagerV44",JSON.stringify(surveys));
+localStorage.setItem("activeSurveyIdV44",activeSurveyId);
 }
 
 function titleCase(str){
@@ -17,37 +17,36 @@ return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 
 function normalizeState(v){
 let t=(v||"").toUpperCase().replace(/\s+/g,'').trim();
-const map={
-OH:"OH",OHIO:"OH",
-VA:"VA",VIRGINIA:"VA",
-MD:"MD",MARYLAND:"MD",
-DC:"DC","DISTRICTOFCOLUMBIA":"DC"
-};
+const map={OH:"OH",OHIO:"OH",VA:"VA",VIRGINIA:"VA",MD:"MD",MARYLAND:"MD",DC:"DC","DISTRICTOFCOLUMBIA":"DC"};
 return map[t]||t;
 }
 
 function wordToNumber(str){
 str=(str||"").toLowerCase().trim();
-const map={
-zero:0,one:1,two:2,three:3,four:4,five:5,
-six:6,seven:7,eight:8,nine:9,ten:10,
-eleven:11,twelve:12,thirteen:13,fourteen:14,
-fifteen:15,sixteen:16,seventeen:17,eighteen:18,
-nineteen:19,twenty:20,thirty:30,forty:40,
-fifty:50,sixty:60,seventy:70,eighty:80,ninety:90
-};
+const map={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
+eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,
+nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
 if(!isNaN(str)) return str;
-let parts=str.split(" ");
 let total=0;
-parts.forEach(p=>{ if(map[p]!=null) total+=map[p]; });
-return total? total.toString():str.toUpperCase();
+str.split(" ").forEach(p=>{ if(map[p]!=null) total+=map[p]; });
+return total?total.toString():str.toUpperCase();
 }
 
-function prefixMark(mark,type){
-mark=(mark||"").toUpperCase().replace(/\s+/g,'');
-if(mark.startsWith(type+"-")) return mark;
-if(mark.startsWith("RTU-")||mark.startsWith("AHU-")) return mark;
-return type+"-"+mark;
+function clean(v){ return (v||"").replace(/\s+/g,'').toUpperCase(); }
+
+function normalizeMark(v,type){
+let t=(v||"").toUpperCase();
+t=t.replace("RTU","").replace("AHU","").replace("-","");
+t=wordToNumber(t);
+t=t.replace(/\s+/g,'');
+if(!t) return "";
+return type+"-"+t;
+}
+
+function exclusive(id,group){
+group.forEach(g=>{
+if(g!==id) document.getElementById(g).checked=false;
+});
 }
 
 function headerTitle(s){
@@ -57,34 +56,25 @@ return `MEP Survey - ${s.meta.client} - ${s.meta.city}`;
 
 function homeScreen(){
 let html=`<div class="header">MEP Survey</div><div class="container">`;
-
 surveys.forEach(s=>{
-html+=`
-<div class="card" onclick="openSurvey('${s.id}')">
-<b>${s.meta.client} - ${s.meta.city}</b><br>
-${s.meta.date}
-</div>`;
+html+=`<div class="card" onclick="openSurvey('${s.id}')">
+<b>${s.meta.client} - ${s.meta.city}</b><br>${s.meta.date}</div>`;
 });
-
-html+=`<button onclick="newSurveyScreen()">+ Start New Survey</button></div>`;
+html+=`<button onclick="newSurvey()">+ Start New Survey</button></div>`;
 app.innerHTML=html;
 }
 
-function newSurveyScreen(){
-app.innerHTML=`
-<div class="header">MEP Survey</div>
-<div class="container">
-<div class="card">
+function newSurvey(){
+app.innerHTML=`<div class="header">MEP Survey</div><div class="container"><div class="card">
 Client<input id="client">
 Former Store<input id="store">
 Address<input id="addr">
 City<input id="city">
 State<input id="state">
 Date<input id="date">
-<button onclick="createSurvey()">Create Survey</button>
+<button onclick="createSurvey()">Create</button>
 <button onclick="homeScreen()">Back</button>
-</div>
-</div>`;
+</div></div>`;
 let d=new Date();
 date.value=("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)+"-"+d.getFullYear().toString().slice(-2);
 }
@@ -101,45 +91,32 @@ city:city.value,
 state:normalizeState(state.value),
 date:date.value
 },
-disc:{},
-archived:false
+disc:{HVAC:{status:"Not Started",equip:[]}}
 };
-disciplines.forEach(d=>{
-survey.disc[d]={status:"Not Started",equip:[]};
-});
 surveys.push(survey);
 activeSurveyId=id;
 saveAll();
 dashboard();
 }
 
-function getActive(){
-return surveys.find(s=>s.id==activeSurveyId);
-}
+function getActive(){ return surveys.find(s=>s.id==activeSurveyId); }
 
-function openSurvey(id){
-activeSurveyId=id;
-saveAll();
-dashboard();
-}
+function openSurvey(id){ activeSurveyId=id; saveAll(); dashboard(); }
 
 function dashboard(){
 let s=getActive();
-let html=`<div class="header">${headerTitle(s)}</div><div class="container">`;
-html+=`<div class="card"><b>Date:</b> ${s.meta.date}</div>`;
-html+=`<div class="card"><b>HVAC</b>
-<button onclick="hvacScreen()">Enter</button>
-</div>`;
-html+=`<button onclick="homeScreen()">Back</button></div>`;
+let html=`<div class="header">${headerTitle(s)}</div><div class="container">
+<div class="card"><b>Date:</b> ${s.meta.date}</div>
+<div class="card"><b>HVAC</b><button onclick="hvac()">Enter</button></div>
+<button onclick="homeScreen()">Back</button></div>`;
 app.innerHTML=html;
 }
 
-function smartSort(list){
+function sortEquip(list){
 return list.sort((a,b)=>{
 let ma=a.mark.split("-")[1]||"";
 let mb=b.mark.split("-")[1]||"";
-let na=parseInt(ma);
-let nb=parseInt(mb);
+let na=parseInt(ma), nb=parseInt(mb);
 if(!isNaN(na)&&!isNaN(nb)) return na-nb;
 if(!isNaN(na)) return -1;
 if(!isNaN(nb)) return 1;
@@ -147,56 +124,43 @@ return ma.localeCompare(mb);
 });
 }
 
-function hvacScreen(){
+function hvac(){
 let s=getActive();
-let all=s.disc["HVAC"].equip;
-
-let rtus=smartSort(all.filter(e=>e.type=="RTU"));
-let ahus=smartSort(all.filter(e=>e.type=="AHU"));
+let all=s.disc.HVAC.equip;
+let rtus=sortEquip(all.filter(e=>e.type=="RTU"));
+let ahus=sortEquip(all.filter(e=>e.type=="AHU"));
 
 let html=`<div class="header">${headerTitle(s)}</div><div class="container">`;
 
-html+=`<div class="card"><b>RTUs</b><br>Quantity: ${rtus.length}<br><br>`;
+html+=`<div class="card"><b>RTUs</b><br>Quantity: ${rtus.length}<br>`;
 rtus.forEach(r=>{
-let idx=all.indexOf(r);
-html+=`${r.mark} <button onclick="editEquip(${idx})">Edit</button>
-<button onclick="deleteEquip(${idx})">Delete</button><br>`;
+let i=all.indexOf(r);
+html+=`${r.mark} <button onclick="edit(${i})">Edit</button>
+<button onclick="del(${i})">Delete</button><br>`;
 });
-html+=`<button onclick="addEquip('RTU')">+ Add RTU</button></div>`;
+html+=`<button onclick="add('RTU')">+ Add RTU</button></div>`;
 
-html+=`<div class="card"><b>AHUs</b><br>Quantity: ${ahus.length}<br><br>`;
+html+=`<div class="card"><b>AHUs</b><br>Quantity: ${ahus.length}<br>`;
 ahus.forEach(r=>{
-let idx=all.indexOf(r);
-html+=`${r.mark} <button onclick="editEquip(${idx})">Edit</button>
-<button onclick="deleteEquip(${idx})">Delete</button><br>`;
+let i=all.indexOf(r);
+html+=`${r.mark} <button onclick="edit(${i})">Edit</button>
+<button onclick="del(${i})">Delete</button><br>`;
 });
-html+=`<button onclick="addEquip('AHU')">+ Add AHU</button></div>`;
+html+=`<button onclick="add('AHU')">+ Add AHU</button></div>`;
 
 html+=`<button onclick="dashboard()">Back</button></div>`;
 app.innerHTML=html;
 }
 
-let editingIndex=null;
-let equipType="RTU";
+let editIndex=null, eqType="RTU";
 
-function addEquip(type){
-editingIndex=null;
-equipType=type;
-renderEquipForm({});
-}
+function add(t){ editIndex=null; eqType=t; form({}); }
 
-function editEquip(i){
-editingIndex=i;
-let r=getActive().disc["HVAC"].equip[i];
-equipType=r.type;
-renderEquipForm(r);
-}
+function edit(i){ editIndex=i; let r=getActive().disc.HVAC.equip[i]; eqType=r.type; form(r); }
 
-function renderEquipForm(r){
-app.innerHTML=`
-<div class="header">${headerTitle(getActive())}</div>
-<div class="container">
-<div class="card">
+function form(r){
+app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
+<div class="container"><div class="card">
 
 <b>Mark</b><input id="mark" value="${r.mark?r.mark.split('-')[1]:""}">
 <b>Make</b><input id="make" value="${r.make||""}">
@@ -204,95 +168,54 @@ app.innerHTML=`
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
 <b>Voltage</b>
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}><span>480V</span></label>
-
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}><span>208V</span></label>
-
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="v3" ${r.volt=="OTHER"?"checked":""}><span>Other</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="v1" onclick="exclusive('v1',['v1','v2','v3'])" ${r.volt=="480V"?"checked":""}><span>480V</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="v2" onclick="exclusive('v2',['v1','v2','v3'])" ${r.volt=="208V"?"checked":""}><span>208V</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}><span>Other</span></label>
 
 <b>Heat</b>
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}><span>Gas</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="h1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.heat=="Gas"?"checked":""}><span>Gas</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="h2" onclick="exclusive('h2',['h1','h2','h3'])" ${r.heat=="Electric"?"checked":""}><span>Electric</span></label>
+<label style="display:flex;gap:8px"><input type="checkbox" id="h3" onclick="exclusive('h3',['h1','h2','h3'])" ${r.heat=="Unknown"?"checked":""}><span>Unknown</span></label>
 
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}><span>Electric</span></label>
-
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="h3" ${r.heat=="Unknown"?"checked":""}><span>Unknown</span></label>
-
-<b>Curb Type</b>
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="c1" ${r.mount=="Standard Curb"?"checked":""}><span>Standard Curb</span></label>
-
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="c2" ${r.mount=="Curb Adapter"?"checked":""}><span>Curb Adapter</span></label>
-
-<b>Suitable for Re-use</b>
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}><span>Yes</span></label>
-
-<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
-<input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}><span>No</span></label>
-
-<b>Additional Notes</b>
-<textarea id="notes">${r.notes||""}</textarea>
-
-<button onclick="saveEquip()">Save</button>
-<button onclick="hvacScreen()">Cancel</button>
+<button onclick="save()">Save</button>
+<button onclick="hvac()">Cancel</button>
 
 </div></div>`;
 }
 
-function saveEquip(){
+function save(){
 let s=getActive();
-
 let volt=v1.checked?"480V":v2.checked?"208V":v3.checked?"OTHER":"";
 let heat=h1.checked?"Gas":h2.checked?"Electric":h3.checked?"Unknown":"";
-let curb=c1.checked?"Standard Curb":c2.checked?"Curb Adapter":"";
-let reuse=r1.checked?"Yes":r2.checked?"No":"";
-
-let rawMark=wordToNumber(mark.value);
-let finalMark=prefixMark(rawMark,equipType);
 
 let obj={
-type:equipType,
-mark:finalMark,
-make:make.value.replace(/\s+/g,''),
-model:model.value.replace(/\s+/g,''),
-serial:serial.value.replace(/\s+/g,''),
+type:eqType,
+mark:normalizeMark(mark.value,eqType),
+make:clean(make.value),
+model:clean(model.value),
+serial:clean(serial.value),
 volt,
-heat,
-mount:curb,
-reuse,
-notes:notes.value
+heat
 };
 
-if(editingIndex===null){
-s.disc["HVAC"].equip.push(obj);
-}else{
-s.disc["HVAC"].equip[editingIndex]=obj;
-}
+if(editIndex==null) s.disc.HVAC.equip.push(obj);
+else s.disc.HVAC.equip[editIndex]=obj;
 
 saveAll();
 
-app.innerHTML=`
-<div class="header">${headerTitle(s)}</div>
-<div class="container">
-<div class="card">
+app.innerHTML=`<div class="header">${headerTitle(s)}</div>
+<div class="container"><div class="card">
 Saved<br><br>
-<button onclick="addEquip('${equipType}')">Add Another</button>
-<button onclick="hvacScreen()">Back To List</button>
+<button onclick="add('${eqType}')">Add Another</button>
+<button onclick="hvac()">Back To List</button>
 </div></div>`;
 }
 
-function deleteEquip(i){
-if(!confirm("Delete "+getActive().disc["HVAC"].equip[i].mark+" ?")) return;
-getActive().disc["HVAC"].equip.splice(i,1);
+function del(i){
+if(!confirm("Delete "+getActive().disc.HVAC.equip[i].mark+" ?")) return;
+getActive().disc.HVAC.equip.splice(i,1);
 saveAll();
-hvacScreen();
+hvac();
 }
 
 homeScreen();
