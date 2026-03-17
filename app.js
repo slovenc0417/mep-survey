@@ -16,9 +16,30 @@ return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 }
 
 function normalizeState(v){
-let t=(v||"").toUpperCase().replace(/\s+/g,'').trim();
-const map={OH:"OH",OHIO:"OH",VA:"VA",VIRGINIA:"VA",MD:"MD",MARYLAND:"MD",DC:"DC","DISTRICTOFCOLUMBIA":"DC"};
-return map[t]||t;
+let t=(v||"").toUpperCase();
+
+t=t.replace(/\s+/g,'').trim();
+
+const map={
+OH:"OH",OHIO:"OH",
+VA:"VA",VIRGINIA:"VA",
+MD:"MD",MARYLAND:"MD",
+DC:"DC",
+DISTRICTOFCOLUMBIA:"DC",
+PENNSYLVANIA:"PA",PA:"PA",
+NEWYORK:"NY",NY:"NY"
+};
+
+return map[t] || t.substring(0,2);
+}
+
+function forceTitleCaseInput(id){
+let el=document.getElementById(id);
+el.addEventListener("blur",()=>{
+el.value=(el.value||"")
+.toLowerCase()
+.replace(/\b\w/g,c=>c.toUpperCase());
+});
 }
 
 function wordToNumber(str){
@@ -67,10 +88,10 @@ app.innerHTML=html;
 function newSurvey(){
 app.innerHTML=`<div class="header">MEP Survey</div><div class="container"><div class="card">
 Client<input id="client">
-Former Store<input id="store">
+Former Store<input id="store" onfocus="forceTitleCaseInput('store')">
 Address<input id="addr">
 City<input id="city">
-State<input id="state">
+State<input id="state" onblur="this.value=normalizeState(this.value)">
 Date<input id="date">
 <button onclick="createSurvey()">Create</button>
 <button onclick="homeScreen()">Back</button>
