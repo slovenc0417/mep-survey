@@ -270,22 +270,58 @@ app.innerHTML=`
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
 <b>Voltage</b><br>
-<label><input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}>480V</label><br>
-<label><input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}>208V</label><br>
-<label><input type="checkbox" id="v3" ${r.volt=="OTHER"?"checked":""}>Other</label>
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}> 
+<span>480V</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}> 
+<span>208V</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="v3" ${r.volt=="OTHER"?"checked":""}> 
+<span>Other</span>
+</label>
 
 <br><b>Heat</b><br>
-<label><input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}>Gas</label><br>
-<label><input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}>Electric</label><br>
-<label><input type="checkbox" id="h3" ${r.heat=="Unknown"?"checked":""}>Unknown</label>
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}>
+<span>Gas</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}>
+<span>Electric</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="h3" ${r.heat=="Uknown"?"checked":""}>
+<span>Unknown</span>
+</label>
 
 <br><b>Curb Type</b><br>
-<label><input type="checkbox" id="c1" ${r.mount=="Standard Curb"?"checked":""}>Standard Curb</label><br>
-<label><input type="checkbox" id="c2" ${r.mount=="Curb Adapter"?"checked":""}>Curb Adapter</label>
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="c1" ${r.mount=="Standard Curb"?"checked":""}>
+<span>Standard Curb</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="c2" ${r.mount=="Curb Adapter"?"checked":""}>
+<span>Curb Adapter</span>
+</label>
 
 <br><b>Suitable for Re-use</b><br>
-<label><input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}>Yes</label><br>
-<label><input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}>No</label>
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}>
+<span>Yes</span>
+</label>
+
+<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
+<input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}>
+<span>No</span>
+</label>
 
 <br><b>Additional Notes</b>
 <textarea id="notes">${r.notes||""}</textarea>
