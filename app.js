@@ -127,7 +127,7 @@ function openSurvey(id){ activeSurveyId=id; saveAll(); dashboard(); }
 function dashboard(){
 let s=getActive();
 let html=`<div class="header">${headerTitle(s)}</div><div class="container">
-<div class="card"><b>Date:</b> ${s.meta.date}</div>
+<div class="card"> <b>General Information</b><br> ${s.meta.client} – ${s.meta.city}<br> ${s.meta.addr}<br> ${s.meta.state}<br> ${s.meta.date}<br><br> <button onclick="editGeneral()">Edit</button> </div>
 <div class="card"><b>HVAC</b><button onclick="hvac()">Enter</button></div>
 <button onclick="homeScreen()">Back</button></div>`;
 app.innerHTML=html;
@@ -237,6 +237,52 @@ if(!confirm("Delete "+getActive().disc.HVAC.equip[i].mark+" ?")) return;
 getActive().disc.HVAC.equip.splice(i,1);
 saveAll();
 hvac();
+}
+
+function saveGeneral(){
+
+let s=getActive();
+
+s.meta.client=titleCase(client.value);
+s.meta.store=titleCase(store.value);
+s.meta.addr=addr.value;
+s.meta.city=city.value;
+s.meta.state=normalizeState(state.value);
+s.meta.date=date.value;
+
+saveAll();
+dashboard();
+}
+
+function editGeneral(){
+
+let s=getActive();
+
+app.innerHTML=`
+<div class="header">${headerTitle(s)}</div>
+<div class="container">
+<div class="card">
+
+Client<input id="client" value="${s.meta.client}" 
+onfocus="forceTitleCaseInput('client')">
+
+Former Store<input id="store" value="${s.meta.store}" 
+onfocus="forceTitleCaseInput('store')">
+
+Address<input id="addr" value="${s.meta.addr}">
+
+City<input id="city" value="${s.meta.city}">
+
+State<input id="state" value="${s.meta.state}" 
+onblur="this.value=normalizeState(this.value)">
+
+Date<input id="date" value="${s.meta.date}">
+
+<button onclick="saveGeneral()">Save</button>
+<button onclick="dashboard()">Cancel</button>
+
+</div>
+</div>`;
 }
 
 homeScreen();
