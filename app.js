@@ -1,19 +1,15 @@
-// VERSION 4.4 — CONSOLIDATED STABLE BUILD
-
-const disciplines = [
+const disciplines=[
 "Walk Site","Electrical","HVAC","Cold Water",
 "Sanitary","Gas","Storm","Fire Alarm","Controls"
 ];
 
-let surveys = JSON.parse(localStorage.getItem("surveyManagerV44") || "[]");
-let activeSurveyId = localStorage.getItem("activeSurveyIdV44");
+let surveys=JSON.parse(localStorage.getItem("surveyManagerV432")||"[]");
+let activeSurveyId=localStorage.getItem("activeSurveyIdV432");
 
 function saveAll(){
-localStorage.setItem("surveyManagerV44", JSON.stringify(surveys));
-localStorage.setItem("activeSurveyIdV44", activeSurveyId);
+localStorage.setItem("surveyManagerV432",JSON.stringify(surveys));
+localStorage.setItem("activeSurveyIdV432",activeSurveyId);
 }
-
-// ---------- NORMALIZERS ----------
 
 function titleCase(str){
 return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
@@ -27,7 +23,7 @@ VA:"VA",VIRGINIA:"VA",
 MD:"MD",MARYLAND:"MD",
 DC:"DC","DISTRICTOFCOLUMBIA":"DC"
 };
-return map[t] || t;
+return map[t]||t;
 }
 
 function wordToNumber(str){
@@ -54,51 +50,19 @@ if(mark.startsWith("RTU-")||mark.startsWith("AHU-")) return mark;
 return type+"-"+mark;
 }
 
-function clean(v){
-return (v||"").replace(/\s+/g,'');
-}
-
-// ---------- UI HELPERS ----------
-
 function headerTitle(s){
 if(!s) return "MEP Survey";
 return `MEP Survey - ${s.meta.client} - ${s.meta.city}`;
 }
 
-function statusIcon(s){
-if(s=="Complete") return "✔";
-if(s=="In Progress") return "●";
-if(s=="N/A") return "N/A";
-return "○";
-}
-
-function smartSort(list){
-return list.sort((a,b)=>{
-let ma=a.mark.split("-")[1]||"";
-let mb=b.mark.split("-")[1]||"";
-let na=parseInt(ma);
-let nb=parseInt(mb);
-
-if(!isNaN(na)&&!isNaN(nb)) return na-nb;
-if(!isNaN(na)) return -1;
-if(!isNaN(nb)) return 1;
-
-return ma.localeCompare(mb);
-});
-}
-
-// ---------- HOME ----------
-
 function homeScreen(){
-
 let html=`<div class="header">MEP Survey</div><div class="container">`;
 
 surveys.forEach(s=>{
-let dim=s.archived?"style='opacity:.4'":"";
 html+=`
-<div class="card" ${dim} onclick="openSurvey('${s.id}')">
+<div class="card" onclick="openSurvey('${s.id}')">
 <b>${s.meta.client} - ${s.meta.city}</b><br>
-${s.meta.date} &nbsp;&nbsp; ${statusIcon(overallStatus(s))}
+${s.meta.date}
 </div>`;
 });
 
@@ -106,68 +70,48 @@ html+=`<button onclick="newSurveyScreen()">+ Start New Survey</button></div>`;
 app.innerHTML=html;
 }
 
-function overallStatus(s){
-let done=Object.values(s.disc).filter(d=>d.status=="Complete").length;
-if(done==0) return "Not Started";
-if(done<disciplines.length) return "In Progress";
-return "Complete";
-}
-
-// ---------- NEW SURVEY ----------
-
 function newSurveyScreen(){
-
 app.innerHTML=`
 <div class="header">MEP Survey</div>
 <div class="container">
 <div class="card">
-<h3>New Survey</h3>
-
 Client<input id="client">
 Former Store<input id="store">
 Address<input id="addr">
 City<input id="city">
 State<input id="state">
 Date<input id="date">
-
 <button onclick="createSurvey()">Create Survey</button>
 <button onclick="homeScreen()">Back</button>
 </div>
 </div>`;
-
 let d=new Date();
 date.value=("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)+"-"+d.getFullYear().toString().slice(-2);
 }
 
 function createSurvey(){
-
 let id=Date.now().toString();
-
 let survey={
 id,
 meta:{
 client:titleCase(client.value),
 store:titleCase(store.value),
 addr:addr.value,
-city:titleCase(city.value),
+city:city.value,
 state:normalizeState(state.value),
 date:date.value
 },
 disc:{},
 archived:false
 };
-
 disciplines.forEach(d=>{
-survey.disc[d]={status:"Not Started",general:{},equip:[]};
+survey.disc[d]={status:"Not Started",equip:[]};
 });
-
 surveys.push(survey);
 activeSurveyId=id;
 saveAll();
 dashboard();
 }
-
-// ---------- DASHBOARD ----------
 
 function getActive(){
 return surveys.find(s=>s.id==activeSurveyId);
@@ -180,45 +124,30 @@ dashboard();
 }
 
 function dashboard(){
-
 let s=getActive();
-
 let html=`<div class="header">${headerTitle(s)}</div><div class="container">`;
-
 html+=`<div class="card"><b>Date:</b> ${s.meta.date}</div>`;
-
-disciplines.forEach(d=>{
-let st=s.disc[d].status;
-html+=`
-<div class="card">
-<b>${d}</b> (${statusIcon(st)})
-<button onclick="openDisc('${d}')">Enter</button>
-<button onclick="markNA('${d}')">N/A</button>
+html+=`<div class="card"><b>HVAC</b>
+<button onclick="hvacScreen()">Enter</button>
 </div>`;
-});
-
-html+=`<button onclick="homeScreen()">Back To Surveys</button></div>`;
+html+=`<button onclick="homeScreen()">Back</button></div>`;
 app.innerHTML=html;
-saveAll();
 }
 
-function markNA(d){
-getActive().disc[d].status="N/A";
-dashboard();
+function smartSort(list){
+return list.sort((a,b)=>{
+let ma=a.mark.split("-")[1]||"";
+let mb=b.mark.split("-")[1]||"";
+let na=parseInt(ma);
+let nb=parseInt(mb);
+if(!isNaN(na)&&!isNaN(nb)) return na-nb;
+if(!isNaN(na)) return -1;
+if(!isNaN(nb)) return 1;
+return ma.localeCompare(mb);
+});
 }
-
-function openDisc(d){
-if(d=="HVAC") return hvacScreen();
-
-app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
-<div class="container"><div class="card">${d} - Feature not built yet
-<button onclick="dashboard()">Back</button></div></div>`;
-}
-
-// ---------- HVAC ----------
 
 function hvacScreen(){
-
 let s=getActive();
 let all=s.disc["HVAC"].equip;
 
@@ -243,12 +172,8 @@ html+=`${r.mark} <button onclick="editEquip(${idx})">Edit</button>
 });
 html+=`<button onclick="addEquip('AHU')">+ Add AHU</button></div>`;
 
-html+=`<button onclick="completeHVAC()">Mark HVAC Complete</button>
-<button onclick="dashboard()">Back</button></div>`;
-
+html+=`<button onclick="dashboard()">Back</button></div>`;
 app.innerHTML=html;
-s.disc["HVAC"].status="In Progress";
-saveAll();
 }
 
 let editingIndex=null;
@@ -267,16 +192,7 @@ equipType=r.type;
 renderEquipForm(r);
 }
 
-function cb(id,label,checked){
-return `
-<label style="display:flex;align-items:center;gap:10px;padding:6px 0;">
-<input type="checkbox" id="${id}" ${checked?"checked":""}>
-<span>${label}</span>
-</label>`;
-}
-
 function renderEquipForm(r){
-
 app.innerHTML=`
 <div class="header">${headerTitle(getActive())}</div>
 <div class="container">
@@ -288,22 +204,38 @@ app.innerHTML=`
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
 <b>Voltage</b>
-${cb("v1","480V",r.volt=="480V")}
-${cb("v2","208V",r.volt=="208V")}
-${cb("v3","Other",r.volt=="OTHER")}
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}><span>480V</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}><span>208V</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="v3" ${r.volt=="OTHER"?"checked":""}><span>Other</span></label>
 
 <b>Heat</b>
-${cb("h1","Gas",r.heat=="Gas")}
-${cb("h2","Electric",r.heat=="Electric")}
-${cb("h3","Unknown",r.heat=="Unknown")}
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}><span>Gas</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}><span>Electric</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="h3" ${r.heat=="Unknown"?"checked":""}><span>Unknown</span></label>
 
 <b>Curb Type</b>
-${cb("c1","Standard Curb",r.mount=="Standard Curb")}
-${cb("c2","Curb Adapter",r.mount=="Curb Adapter")}
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="c1" ${r.mount=="Standard Curb"?"checked":""}><span>Standard Curb</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="c2" ${r.mount=="Curb Adapter"?"checked":""}><span>Curb Adapter</span></label>
 
 <b>Suitable for Re-use</b>
-${cb("r1","Yes",r.reuse=="Yes")}
-${cb("r2","No",r.reuse=="No")}
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}><span>Yes</span></label>
+
+<label style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+<input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}><span>No</span></label>
 
 <b>Additional Notes</b>
 <textarea id="notes">${r.notes||""}</textarea>
@@ -315,7 +247,6 @@ ${cb("r2","No",r.reuse=="No")}
 }
 
 function saveEquip(){
-
 let s=getActive();
 
 let volt=v1.checked?"480V":v2.checked?"208V":v3.checked?"OTHER":"";
@@ -329,9 +260,9 @@ let finalMark=prefixMark(rawMark,equipType);
 let obj={
 type:equipType,
 mark:finalMark,
-make:clean(make.value),
-model:clean(model.value),
-serial:clean(serial.value),
+make:make.value.replace(/\s+/g,''),
+model:model.value.replace(/\s+/g,''),
+serial:serial.value.replace(/\s+/g,''),
 volt,
 heat,
 mount:curb,
@@ -345,4 +276,23 @@ s.disc["HVAC"].equip.push(obj);
 s.disc["HVAC"].equip[editingIndex]=obj;
 }
 
-save
+saveAll();
+
+app.innerHTML=`
+<div class="header">${headerTitle(s)}</div>
+<div class="container">
+<div class="card">
+Saved<br><br>
+<button onclick="addEquip('${equipType}')">Add Another</button>
+<button onclick="hvacScreen()">Back To List</button>
+</div></div>`;
+}
+
+function deleteEquip(i){
+if(!confirm("Delete "+getActive().disc["HVAC"].equip[i].mark+" ?")) return;
+getActive().disc["HVAC"].equip.splice(i,1);
+saveAll();
+hvacScreen();
+}
+
+homeScreen();
