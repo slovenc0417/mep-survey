@@ -21,8 +21,20 @@ DC:"DC","DISTRICT OF COLUMBIA":"DC"
 };
 
 function normalizeState(v){
-let t=(v||"").toUpperCase().trim();
-return stateMap[t]||t;
+let t=(v||"").toUpperCase().replace(/\s+/g,'').trim();
+
+const map={
+OH:"OH",OHIO:"OH",
+VA:"VA",VIRGINIA:"VA",
+MD:"MD",MARYLAND:"MD",
+DC:"DC","DISTRICTOFCOLUMBIA":"DC"
+};
+
+return map[t] || t;
+}
+
+function titleCase(str){
+return (str||"").toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
 }
 
 function wordToNumber(str){
@@ -113,8 +125,8 @@ let id=Date.now().toString();
 let survey={
 id,
 meta:{
-client:client.value,
-store:store.value,
+client:titleCase(client.value),
+store:titleCase(store.value),
 addr:addr.value,
 city:city.value,
 state:normalizeState(state.value),
