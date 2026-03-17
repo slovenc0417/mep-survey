@@ -3,11 +3,16 @@ const disciplines = [
 "Sanitary","Gas","Storm","Fire Alarm","Controls"
 ];
 
-let db = JSON.parse(localStorage.getItem("surveyV3") || "null");
+let db = JSON.parse(localStorage.getItem("surveyV35") || "null");
 
-function save(){ localStorage.setItem("surveyV3", JSON.stringify(db)); }
+function save(){ localStorage.setItem("surveyV35", JSON.stringify(db)); }
 
 function upper(v){ return (v||"").toUpperCase(); }
+
+function headerTitle(){
+if(!db) return "MEP Survey";
+return `MEP Survey — ${db.meta.client} — ${db.meta.city}`;
+}
 
 function startScreen(){
 
@@ -16,6 +21,9 @@ return dashboard();
 }
 
 app.innerHTML = `
+<div class="header">${headerTitle()}</div>
+
+<div class="container">
 <div class="card">
 <h3>Start New Survey</h3>
 
@@ -27,6 +35,7 @@ State<input id="state">
 Date<input id="date">
 
 <button onclick="createSurvey()">Start Survey</button>
+</div>
 </div>
 `;
 
@@ -46,8 +55,7 @@ store: upper(store.value),
 addr: upper(addr.value),
 city: upper(city.value),
 state: upper(state.value),
-date: date.value,
-version:1
+date: date.value
 },
 disc:{},
 archived:false
@@ -56,7 +64,6 @@ archived:false
 disciplines.forEach(d=>{
 db.disc[d]={
 status:"Not Started",
-flags:0,
 general:{},
 equip:[]
 };
@@ -66,38 +73,36 @@ save();
 dashboard();
 }
 
+function statusIcon(s){
+if(s=="Complete") return "✔";
+if(s=="In Progress") return "●";
+if(s=="N/A") return "N/A";
+return "○";
+}
+
 function dashboard(){
 
-let html=`
+let html=`<div class="header">${headerTitle()}</div><div class="container">`;
+
+html+=`
 <div class="card">
-<b>${db.meta.client}</b><br>
-${db.meta.city} ${db.meta.state}<br>
-Date: ${db.meta.date}
+DATE: ${db.meta.date}
 </div>
 `;
 
 disciplines.forEach(d=>{
-let eq=db.disc[d].equip.length;
 let s=db.disc[d].status;
-
-let icon = s=="Complete"?"✔":s=="In Progress"?"●":s=="N/A"?"N/A":"○";
 
 html+=`
 <div class="card">
-${d} (${icon})<br>
-RTUs/Equip: ${eq}
+<b>${d}</b> (${statusIcon(s)})
 <button onclick="openDisc('${d}')">Enter</button>
 <button onclick="markNA('${d}')">N/A</button>
 </div>
 `;
 });
 
-html+=`
-<div class="card">
-<button onclick="exportExcel()">Export Excel</button>
-</div>
-`;
-
+html+=`</div>`;
 app.innerHTML=html;
 save();
 }
@@ -111,13 +116,14 @@ function openDisc(d){
 
 if(d=="HVAC") return hvacScreen();
 
-db.disc[d].status="In Progress";
-
 app.innerHTML=`
+<div class="header">${headerTitle()}</div>
+<div class="container">
 <div class="card">
 <h3>${d}</h3>
 Feature not built yet.
 <button onclick="dashboard()">Back</button>
+</div>
 </div>
 `;
 }
@@ -125,10 +131,14 @@ Feature not built yet.
 function hvacScreen(){
 
 let g=db.disc["HVAC"].general;
+let count=db.disc["HVAC"].equip.length;
 
 app.innerHTML=`
+<div class="header">${headerTitle()}</div>
+<div class="container">
+
 <div class="card">
-<h3>HVAC General</h3>
+<h3>HVAC GENERAL</h3>
 
 RTU Type
 <select id="rtutype">
@@ -149,14 +159,22 @@ Air Distribution<textarea id="air">${g.air||""}</textarea>
 </div>
 
 <div class="card">
-<h3>RTUs (${db.disc["HVAC"].equip.length})</h3>
+<h3>RTUs Entered: ${count}</h3>
 <button onclick="addRTU()">+ Add RTU</button>
+<button onclick="completeHVAC()">Mark HVAC Complete</button>
 <button onclick="dashboard()">Back</button>
+</div>
+
 </div>
 `;
 
 db.disc["HVAC"].status="In Progress";
 save();
+}
+
+function completeHVAC(){
+db.disc["HVAC"].status="Complete";
+dashboard();
 }
 
 function saveHVACGeneral(){
@@ -173,9 +191,13 @@ save();
 alert("Saved");
 }
 
+let voltValue="";
+
 function addRTU(){
 
 app.innerHTML=`
+<div class="header">${headerTitle()}</div>
+<div class="container">
 <div class="card">
 <h3>Add RTU</h3>
 
@@ -212,10 +234,9 @@ Notes<textarea id="notes"></textarea>
 
 <button onclick="saveRTU()">Save RTU</button>
 </div>
+</div>
 `;
 }
-
-let voltValue="";
 
 function setVolt(v){
 voltValue=v;
@@ -244,43 +265,6 @@ addRTU();
 }else{
 hvacScreen();
 }
-}
-
-function exportExcel(){
-
-let wb=XLSX.utils.book_new();
-
-let g=db.disc["HVAC"].general;
-
-let gen=[
-["TYPE",g.type||""],
-["GAS",g.gas||""],
-["ELECTRICAL",g.elec||""],
-["CONDENSATE",g.cond||""],
-["AIR",g.air||""]
-];
-
-let ws=XLSX.utils.aoa_to_sheet(gen);
-XLSX.utils.book_append_sheet(wb,ws,"HVAC GENERAL");
-
-let rows=[["MARK","MAKE","MODEL","SERIAL","VOLT","GAS","ELEC","MOUNT","REUSE","NOTES"]];
-
-db.disc["HVAC"].equip.forEach(r=>{
-rows.push([
-r.mark,r.make,r.model,r.serial,r.volt,
-r.gas?"YES":"",r.elec?"YES":"",r.mount,r.reuse,r.notes
-]);
-});
-
-let ws2=XLSX.utils.aoa_to_sheet(rows);
-XLSX.utils.book_append_sheet(wb,ws2,"RTUs");
-
-let fname=
-`${db.meta.client} - ${db.meta.city} ${db.meta.state}_`+
-db.meta.date.replaceAll("/","")+
-".xlsx";
-
-XLSX.writeFile(wb,fname);
 }
 
 startScreen();
