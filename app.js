@@ -203,60 +203,58 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 
 <b>Voltage</b>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="v1" onclick="exclusive('v1',['v1','v2','v3'])" ${r.volt=="480V"?"checked":""}>
 <span>480V</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="v2" onclick="exclusive('v2',['v1','v2','v3'])" ${r.volt=="208V"?"checked":""}>
 <span>208V</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}>
 <span>Other</span>
 </label>
 
 <b>Heat</b>
 
-<b>Heat</b>
-
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="h1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.heat=="Gas"?"checked":""}>
 <span>Gas</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="h2" onclick="exclusive('h2',['h1','h2','h3'])" ${r.heat=="Electric"?"checked":""}>
 <span>Electric</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="h3" onclick="exclusive('h3',['h1','h2','h3'])" ${r.heat=="Unknown"?"checked":""}>
 <span>Unknown</span>
 </label>
 
 <b>Curb Type</b>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="c1" onclick="exclusive('c1',['c1','c2'])" ${r.mount=="Standard"?"checked":""}>
 <span>Standard</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="c2" onclick="exclusive('c2',['c1','c2'])" ${r.mount=="CurbAdapter"?"checked":""}>
 <span>Curb Adapter</span>
 </label>
 
 <b>Suitable for Re-use</b>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="r1" onclick="exclusive('r1',['r1','r2'])" ${r.reuse=="Yes"?"checked":""}>
 <span>Yes</span>
 </label>
 
-<label style="display:flex;align-items:center;justify-content:flex-start;gap:6px;padding:4px 0;">
+<label class="pickrow">
 <input type="checkbox" id="r2" onclick="exclusive('r2',['r1','r2'])" ${r.reuse=="No"?"checked":""}>
 <span>No</span>
 </label>
