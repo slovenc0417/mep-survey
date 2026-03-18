@@ -201,28 +201,22 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 <b>Model</b><input id="model" value="${r.model||""}">
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
+<div style="margin-top:12px;">
 <b>Voltage</b>
 
-<label>
-<div style="display:inline-flex;align-items:center;gap:6px;">
-<input type="checkbox" id="v1" onclick="exclusive('v1',['v1','v2','v3'])" ${r.volt=="480V"?"checked":""}>
-<span>480V</span>
+<div style="margin-top:6px;">
+<label><input type="checkbox" id="v1" onclick="exclusive('v1',['v1','v2','v3'])" ${r.volt=="480V"?"checked":""}> 480V</label>
 </div>
-</label>
 
-<label>
-<div style="display:inline-flex;align-items:center;gap:6px;">
-<input type="checkbox" id="v2" onclick="exclusive('v2',['v1','v2','v3'])" ${r.volt=="208V"?"checked":""}>
-<span>208V</span>
+<div>
+<label><input type="checkbox" id="v2" onclick="exclusive('v2',['v1','v2','v3'])" ${r.volt=="208V"?"checked":""}> 208V</label>
 </div>
-</label>
 
-<label>
-<div style="display:inline-flex;align-items:center;gap:6px;">
-<input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}>
-<span>Other</span>
+<div>
+<label><input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}> Other</label>
 </div>
-</label>
+
+</div>
 
 <b>Heat</b>
 
