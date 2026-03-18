@@ -205,28 +205,26 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 
 <b>Voltage</b>
 
-<label style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+<label class="pickrow">
 <input type="checkbox" id="v1"
 onclick="exclusive('v1',['v1','v2','v3'])"
 ${r.volt=="480V"?"checked":""}>
 <span>480V</span>
 </label>
 
-<label style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+<label class="pickrow">
 <input type="checkbox" id="v2"
 onclick="exclusive('v2',['v1','v2','v3'])"
 ${r.volt=="208V"?"checked":""}>
 <span>208V</span>
 </label>
 
-<label style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+<label class="pickrow">
 <input type="checkbox" id="v3"
 onclick="exclusive('v3',['v1','v2','v3'])"
 ${r.volt=="OTHER"?"checked":""}>
 <span>Other</span>
 </label>
-
-</div>
 
 <b>Heat</b>
 
