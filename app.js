@@ -202,6 +202,7 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 <b>Serial</b><input id="serial" value="${r.serial||""}">
 
 <div style="margin-top:12px;">
+
 <b>Voltage</b>
 
 <div style="margin-top:6px;">
@@ -219,13 +220,6 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 </div>
 
 <b>Heat</b>
-
-<label>
-<div style="display:inline-flex;align-items:center;gap:6px;">
-<input type="checkbox" id="v1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.volt=="480V"?"checked":""}>
-<span>480V</span>
-</div>
-</label>
 
 <label class="pickrow">
 <input type="checkbox" id="h1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.heat=="Gas"?"checked":""}>
