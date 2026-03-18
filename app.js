@@ -203,22 +203,35 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 
 <b>Voltage</b>
 
-<label class="pickrow">
+<label>
+<div style="display:inline-flex;align-items:center;gap:6px;">
 <input type="checkbox" id="v1" onclick="exclusive('v1',['v1','v2','v3'])" ${r.volt=="480V"?"checked":""}>
 <span>480V</span>
+</div>
 </label>
 
-<label class="pickrow">
+<label>
+<div style="display:inline-flex;align-items:center;gap:6px;">
 <input type="checkbox" id="v2" onclick="exclusive('v2',['v1','v2','v3'])" ${r.volt=="208V"?"checked":""}>
 <span>208V</span>
+</div>
 </label>
 
-<label class="pickrow">
+<label>
+<div style="display:inline-flex;align-items:center;gap:6px;">
 <input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}>
 <span>Other</span>
+</div>
 </label>
 
 <b>Heat</b>
+
+<label>
+<div style="display:inline-flex;align-items:center;gap:6px;">
+<input type="checkbox" id="v1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.volt=="480V"?"checked":""}>
+<span>480V</span>
+</div>
+</label>
 
 <label class="pickrow">
 <input type="checkbox" id="h1" onclick="exclusive('h1',['h1','h2','h3'])" ${r.heat=="Gas"?"checked":""}>
