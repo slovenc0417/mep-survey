@@ -217,8 +217,6 @@ app.innerHTML=`<div class="header">${headerTitle(getActive())}</div>
 <label><input type="checkbox" id="v3" onclick="exclusive('v3',['v1','v2','v3'])" ${r.volt=="OTHER"?"checked":""}> Other</label>
 </div>
 
-</div>
-
 <b>Heat</b>
 
 <label class="pickrow">
