@@ -117,7 +117,9 @@ let s=getActive();
 let html=`<div class="header">MEP Survey – ${s.client} – ${s.city}</div><div class="container">`;
 
 html+=`<div class="card"><b>General Information</b><br>
-${s.store||""}<br>${s.address||""}<br>${s.state||""}<br>${s.date||""}
+${s.address||""}<br>
+${s.city||""}, ${s.state||""}<br>
+${s.date||""}
 </div>`;
 
 DISCIPLINES.forEach(d=>{
