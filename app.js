@@ -193,7 +193,7 @@ equipForm(r);
 }
 
 function equipForm(r){
-app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div class="card">
+app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div class="card" style="display:flex;flex-direction:column;">
 
 <b>Mark</b>
 <input id="mark" value="${r.mark?r.mark.split("-")[1]:""}">
