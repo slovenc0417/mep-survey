@@ -235,22 +235,22 @@ app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div cl
 <input id="serial" value="${r.serial||""}">
 
 <b>Voltage</b>
-<label class="checkrow"><input type="checkbox" id="v1">480V</label>
-<label class="checkrow"><input type="checkbox" id="v2">208V</label>
-<label class="checkrow"><input type="checkbox" id="v3">Other</label>
+<label class="checkrow"><input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}>480V</label>
+<label class="checkrow"><input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}>208V</label>
+<label class="checkrow"><input type="checkbox" id="v3" ${r.volt=="Other"?"checked":""}>Other</label>
 
 <b>Heat</b>
-<label class="checkrow"><input type="checkbox" id="h1">Gas</label>
-<label class="checkrow"><input type="checkbox" id="h2">Electric</label>
-<label class="checkrow"><input type="checkbox" id="h3">Unknown</label>
+<label class="checkrow"><input type="checkbox" id="h1" ${r.volt=="Gas"?"checked":""}>Gas</label>
+<label class="checkrow"><input type="checkbox" id="h2" ${r.volt=="Electric"?"checked":""}>Electric</label>
+<label class="checkrow"><input type="checkbox" id="h3" ${r.volt=="Unknown"?"checked":""}>Unknown</label>
 
 <b>Curb Type</b>
-<label class="checkrow"><input type="checkbox" id="c1">Standard</label>
-<label class="checkrow"><input type="checkbox" id="c2">Curb Adapter</label>
+<label class="checkrow"><input type="checkbox" id="c1" ${r.volt=="Standard"?"checked":""}>Standard</label>
+<label class="checkrow"><input type="checkbox" id="c2" ${r.volt=="Curb Adapter"?"checked":""}>Curb Adapter</label>
 
 <b>Suitable for Re-use</b>
-<label class="checkrow"><input type="checkbox" id="r1">Yes</label>
-<label class="checkrow"><input type="checkbox" id="r2">No</label>
+<label class="checkrow"><input type="checkbox" id="r1" ${r.volt=="Yes"?"checked":""}>Yes</label>
+<label class="checkrow"><input type="checkbox" id="r2" ${r.volt=="No"?"checked":""}>No</label>
 
 <b>Notes</b>
 <textarea id="notes">${r.notes||""}</textarea>
