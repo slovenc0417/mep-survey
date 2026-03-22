@@ -104,7 +104,7 @@ function newSurvey(){
 app.innerHTML=`<div class="header">New Survey</div><div class="container"><div class="card">
 
 Client<input id="c">
-Former Store<input id="fs">
+er Store<input id="fs">
 Address<input id="ad">
 City<input id="ci">
 State<input id="st">
@@ -143,7 +143,7 @@ function dashboard(){
 let s=getActive();
 let html=`<div class="header">MEP Survey – ${s.client} – ${s.city}</div><div class="container">`;
 
-html+=`<div class="card"><b>General Information</b><br>
+html+=`<div class="card"><b>General Ination</b><br>
 ${s.address||""}<br>
 ${s.city||""}, ${s.state||""}<br>
 ${s.date||""}
