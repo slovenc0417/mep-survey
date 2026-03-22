@@ -143,7 +143,7 @@ function dashboard(){
 let s=getActive();
 let html=`<div class="header">MEP Survey – ${s.client} – ${s.city}</div><div class="container">`;
 
-html+=`<div class="card"><b>General Ination</b><br>
+html+=`<div class="card"><b>General Information</b><br>
 ${s.address||""}<br>
 ${s.city||""}, ${s.state||""}<br>
 ${s.date||""}
@@ -223,16 +223,16 @@ function equipForm(r){
 app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div class="card" style="display:flex;flex-direction:column;">
 
 <b>Mark</b>
-<input id="mark" value="${r.mark?r.mark.split("-")[1]:""}">
+<input id="mark" style="font-size:22px;height:60px;padding:18px;" value="${r.mark?r.mark.split("-")[1]:""}">
 
 <b>Make</b>
-<input id="make" value="${r.make||""}">
+<input id="make" style="font-size:22px;height:60px;padding:18px;" value="${r.make||""}">
 
 <b>Model</b>
-<input id="model" value="${r.model||""}">
+<input id="model" style="font-size:22px;height:60px;padding:18px;" value="${r.model||""}">
 
 <b>Serial</b>
-<input id="serial" value="${r.serial||""}">
+<input id="serial" style="font-size:22px;height:60px;padding:18px;" value="${r.serial||""}">
 
 <b>Voltage</b>
 <label class="checkrow">
