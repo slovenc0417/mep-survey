@@ -104,7 +104,7 @@ function newSurvey(){
 app.innerHTML=`<div class="header">New Survey</div><div class="container"><div class="card">
 
 Client<input id="c">
-er Store<input id="fs">
+Former Store<input id="fs">
 Address<input id="ad">
 City<input id="ci">
 State<input id="st">
@@ -122,7 +122,7 @@ function createSurvey(){
 let id=Date.now().toString();
 let survey={
 id,
-client:titleCase(c.value),
+:titleCase(c.value),
 store:titleCase(fs.value),
 address:ad.value,
 city:titleCase(ci.value),
