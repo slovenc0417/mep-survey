@@ -235,22 +235,48 @@ app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div cl
 <input id="serial" value="${r.serial||""}">
 
 <b>Voltage</b>
-<label class="checkrow"><input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}>480V</label>
-<label class="checkrow"><input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}>208V</label>
-<label class="checkrow"><input type="checkbox" id="v3" ${r.volt=="Other"?"checked":""}>Other</label>
+<label class="checkrow">
+<input type="checkbox" id="v1" ${r.volt=="480V"?"checked":""}>480V
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="v2" ${r.volt=="208V"?"checked":""}>208V
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="v3" ${r.volt=="Other"?"checked":""}>Other
+</label>
 
 <b>Heat</b>
-<label class="checkrow"><input type="checkbox" id="h1" ${r.volt=="Gas"?"checked":""}>Gas</label>
-<label class="checkrow"><input type="checkbox" id="h2" ${r.volt=="Electric"?"checked":""}>Electric</label>
-<label class="checkrow"><input type="checkbox" id="h3" ${r.volt=="Unknown"?"checked":""}>Unknown</label>
+<label class="checkrow">
+<input type="checkbox" id="h1" ${r.heat=="Gas"?"checked":""}>Gas
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="h2" ${r.heat=="Electric"?"checked":""}>Electric
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="h3" ${r.heat=="Unknown"?"checked":""}>Unknown
+</label>
 
 <b>Curb Type</b>
-<label class="checkrow"><input type="checkbox" id="c1" ${r.volt=="Standard"?"checked":""}>Standard</label>
-<label class="checkrow"><input type="checkbox" id="c2" ${r.volt=="Curb Adapter"?"checked":""}>Curb Adapter</label>
+<label class="checkrow">
+<input type="checkbox" id="c1" ${r.mount=="Standard"?"checked":""}>Standard
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="c2" ${r.mount=="CurbAdapter"?"checked":""}>Curb Adapter
+</label>
 
 <b>Suitable for Re-use</b>
-<label class="checkrow"><input type="checkbox" id="r1" ${r.volt=="Yes"?"checked":""}>Yes</label>
-<label class="checkrow"><input type="checkbox" id="r2" ${r.volt=="No"?"checked":""}>No</label>
+<label class="checkrow">
+<input type="checkbox" id="r1" ${r.reuse=="Yes"?"checked":""}>Yes
+</label>
+
+<label class="checkrow">
+<input type="checkbox" id="r2" ${r.reuse=="No"?"checked":""}>No
+</label>
 
 <b>Notes</b>
 <textarea id="notes">${r.notes||""}</textarea>
