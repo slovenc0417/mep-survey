@@ -223,10 +223,10 @@ function equipForm(r){
 app.innerHTML=`<div class="header">${eqType}</div><div class="container"><div class="card" style="display:flex;flex-direction:column;">
 
 <b>Mark</b>
-<input id="mark" style="font-size:22px;height:60px;padding:18px;" value="${r.mark?r.mark.split("-")[1]:""}">
+<input id="mark" style="font-size:18px;height:60px;padding:18px;" value="${r.mark?r.mark.split("-")[1]:""}">
 
 <b>Make</b>
-<input id="make" style="font-size:22px;height:60px;padding:18px;" value="${r.make||""}">
+<input id="make" style="font-size:20px;height:60px;padding:18px;" value="${r.make||""}">
 
 <b>Model</b>
 <input id="model" style="font-size:22px;height:60px;padding:18px;" value="${r.model||""}">
