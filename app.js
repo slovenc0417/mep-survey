@@ -122,7 +122,7 @@ function createSurvey(){
 let id=Date.now().toString();
 let survey={
 id,
-:titleCase(c.value),
+client:titleCase(c.value),
 store:titleCase(fs.value),
 address:ad.value,
 city:titleCase(ci.value),
